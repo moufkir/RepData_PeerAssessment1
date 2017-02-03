@@ -1,33 +1,36 @@
 # Reproducible Research: Peer Assessment 1
+##Introduction
+The goal of this assignment is to generate a reproducible document that prepare, analyze and explain data about personal movement using activity monitoring devices such as a [Fitbit](http://www.fitbit.com), [Nike
+Fuelband](http://www.nike.com/us/en_us/c/nikeplus-fuelband), or
+[Jawbone Up](https://jawbone.com/up). 
+
+This type of devices collects anonymous data at 5 minute intervals through out the day during two months (October and November, 2012 and include the number of steps taken in 5 minute intervals each day).
+
+* Dataset: [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip) [52K]
+
+The variables included in this dataset are:
+
+* **steps**: Number of steps taking in a 5-minute interval (missing
+    values are coded as `NA`)
+
+* **date**: The date on which the measurement was taken in YYYY-MM-DD
+    format
+
+* **interval**: Identifier for the 5-minute interval in which
+    measurement was taken
 
 ## Loading and preprocessing the data
+loading the libraries
 
 ```r
 library(dplyr)
+library(lattice)
 ```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
+reading the csv file
 
 ```r
-library(lattice)
 setwd("/Users/moufkir/Desktop/00-Coursera/Data_Science_Spesialization/Reproducible/W2A/RepData_PeerAssessment1/")
-df<-read.csv("activity.csv", header = T, na.strings = "NA")
-##df<-df[complete.cases(df),]
+df<-read.csv("data/activity.csv", header = T, na.strings = "NA")
 ```
 
 ## What is mean total number of steps taken per day?
@@ -36,49 +39,28 @@ df<-read.csv("activity.csv", header = T, na.strings = "NA")
 ```r
 day<-group_by(df, date)
 stepsDays<- summarise(day, nsteps=sum(steps, na.rm = T))
-hist(stepsDays$nsteps, col = "gray", xlab = "Number of Steps", main = "Steps")
+
+hist(stepsDays$nsteps, col = "gray", xlab = "Number of Steps", main = "Steps per day")
+abline(v=median(stepsDays$nsteps, na.rm = TRUE),lty=1,lwd=2, col="blue")
+abline(v=mean(stepsDays$nsteps, na.rm = TRUE),lty=2,lwd=2,col="black")
+legend("topright",lwd=2,col=c("blue","black"),c("Median","Mean"), cex=1.2,box.lwd=.5)
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
-```r
-mean(day$steps, na.rm = TRUE)
-```
-
-```
-## [1] 37.3826
-```
-
-```r
-median(day$steps, na.rm = TRUE)
-```
-
-```
-## [1] 0
-```
-
 
 ## What is the average daily activity pattern?
+### the maximum average steps is highlighted by the red horizontal line
 
 
 ```r
 intervals <- group_by(df, interval)
 intSteps<- summarise(intervals, average.steps = mean(steps, na.rm = TRUE))
 plot(intSteps$interval, intSteps$average.steps, type="l", xlab = "intervals", ylab = "Average Steps") 
+abline(h=filter(intSteps, average.steps==max(average.steps))[,2], lty=1, lwd=1, col="red")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
-
-```r
-filter(intSteps, average.steps==max(average.steps))
-```
-
-```
-## # A tibble: 1 × 2
-##   interval average.steps
-##      <int>         <dbl>
-## 1      835      206.1698
-```
 
 
 ## Imputing missing values
@@ -104,30 +86,16 @@ for(intrv in intSteps$interval) {
 }
 
 ##write.table(newdf,file = "nonaactivity.csv", quote = F, sep = ";")
-
 ## Ploting the histogram
 day<-group_by(newdf, date)
 stepsDays<- summarise(day, nsteps=sum(steps, na.rm = T))
 hist(stepsDays$nsteps, col = "green", xlab = "Number of Steps without NAs", main = "Steps")
+abline(v=median(stepsDays$nsteps, na.rm = TRUE),lty=1,lwd=2, col="blue")
+abline(v=mean(stepsDays$nsteps, na.rm = TRUE),lty=2,lwd=2,col="red")
+legend("topright",lwd=2,col=c("blue","red"),c("Median","Mean"), cex=1.2,box.lwd=0.5)
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
-
-```r
-mean(day$steps, na.rm = TRUE)
-```
-
-```
-## [1] 37.3826
-```
-
-```r
-median(day$steps, na.rm = TRUE)
-```
-
-```
-## [1] 0
-```
 
 
 
